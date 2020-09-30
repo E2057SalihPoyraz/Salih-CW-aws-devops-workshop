@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  
+Parameters:
+  KeyName:
+    Description : The EC2 Key Pair to allow
+
+  
+Resources:
+  RomenInstance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId: ami-0c94855ba95c71c99
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !GetAtt RomenConverterWebsiteSG.GroupId
+      UserData: 
+        !Base64 |
+
+  
+  RomenConverterWebsiteSG:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: SSH and HTTP
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: TCP
+          ToPort: 80
+        - IpProtocol: TCP
+          CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+  
+Outputs:
+  URL:
+  Description: The URL of the website
+  Value: !Join 
+    - ""
+    - - "http://"
+      - !Ref RomenInstance.DNSName
