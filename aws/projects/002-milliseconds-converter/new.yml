@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  The Milliseconds Converter Application aims to convert the given time in milliseconds into hours, 
+  minutes, and seconds. The application is coded in Python and deployed as a web application with 
+  Flask on AWS Application Load Balancer with Auto Scaling Group of Elastic Compute Cloud (EC2) Instances 
+  using AWS Cloudformation Service.
+
+Parameters:
+  KeyName: 
+    Description: Please enter your key name. 
+    Type: AWS::EC2::KeyPair::KeyName
+  Subnets:
+    Description: Please select all available subnets
+    Type: List<AWS::EC2::Subnet::Id>
+  
+Resources:
+
+  MyAutoScalingGroup:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Properties:
+      AvailabilityZones: !GetAZs
+      DesiredCapacity: 2
+      HealthCheckGracePeriod: 90
+      HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MyInstanceLaunchTemplate
+        Version: !GetAtt MyInstanceLaunchTemplate.LatestVersionNumber
+      MaxSize: 3 #required
+      MinSize: 1 #required
+      TargetGroupARNs:
+        - !Ref MyALBTargetGroup
+
+  MyInstanceLaunchTemplate:
+    Type: "AWS::EC2::LaunchTemplate"
+    Properties:
+      LaunchTemplateData:
+        ImageId: ami-0947d2ba12ee1ff75
+        InstanceType: t2.micro
+        KeyName: !Ref KeyName
+        SecurityGroups:
+            - !Ref MyInstanceSecGroup
+        TagSpecifications:
+            - ResourceType: instance
+              Tags:
+                - Key: Name
+                  Value: !Sub Web Server of ${AWS::StackName}
+        UserData: !Base64 |
+          #! /bin/bash 
+          yum update -y
+          yum install python3 -y
+          pip3 install flask
+          cd /home/ec2-user
+          wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/002-milliseconds-converter/app.py
+          mkdir templates
+          cd templates
+          wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/002-milliseconds-converter/templates/index.html
+          wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/002-milliseconds-converter/templates/result.html
+          cd ..
+          python3 app.py
+
+  MyALB:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      SecurityGroups: 
+        - !GetAtt MyLoadBalancerSecGroup.GroupId
+      Subnets: !Ref Subnets  
+
+  MyALBListener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      DefaultActions: #required
+        - Type: forward
+          TargetGroupArn: !Ref MyALBTargetGroup
+      LoadBalancerArn: !Ref MyALB #required
+      Port: 80 #required
+      Protocol: HTTP #required
+
+  MyALBTargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      VpcId: !GetAtt MyLoadBalancerSecGroup.VpcId
+
+  MyInstanceSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: HTTP from only MyLoadBalancerSecGroup #required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt MyLoadBalancerSecGroup.GroupId  
+
+  MyLoadBalancerSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Allows HTTP connections from anywhere #required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  
+Outputs:
+  URL:
+    Description: The URL of the website
+    Value: !Join 
+      - ""
+      - - 'http://'
+        - !GetAtt MyALB.DNSName

@@ -22,8 +22,7 @@ Resources:
       Scheme: internet-facing
       SecurityGroups:
         - !GetAtt MyLoadBalancerSecurityGroup.GroupId
-      Subnets:
-        - !Ref Subnets
+      Subnets: !Ref Subnets
       Tags:
         - Key: Name
           Value: Milisecond-LB
@@ -34,7 +33,7 @@ Resources:
     Properties:
       DefaultActions: #required
         - Type: forward
-          TargetArnGroup: !Ref MyALBTargetGroup
+          TargetGroupArn: !Ref MyALBTargetGroup
       LoadBalancerArn: !Ref MyApplicationLoadBalancer #required
       Port: 80 #required
       Protocol: HTTP #required
@@ -45,7 +44,7 @@ Resources:
       HealthCheckIntervalSeconds: 30
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 3
-      Name: Target-1
+      Name: Target1
       Port: 80
       Protocol: HTTP
       TargetType: instance
@@ -63,18 +62,17 @@ Resources:
         - !Ref MyInstanceSecurityGroup
       UserData: !Base64 |
         #!/bin/bash
-
         yum update -y
         yum install python3 -y
         pip3 install flask
+
         aws ec2 describe-subnets --no-paginate --filters "Name=default-for-az,Values=true" | egrep "(VpcId)|(SubnetId)"
-        mkdir milliseconds
-        cd milliseconds
-        wget https://raw.githubusercontent.com/mekevinbright/CW-AWS-DEVOPS-WORKING/master/aws/projects/002-milliseconds-converter/app.py
+        cd /home/ec2-user
+        wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/002-milliseconds-converter/app.py
         mkdir templates
         cd templates
-        wget https://raw.githubusercontent.com/mekevinbright/CW-AWS-DEVOPS-WORKING/master/aws/projects/002-milliseconds-converter/templates/index.html
-        wget https://raw.githubusercontent.com/mekevinbright/CW-AWS-DEVOPS-WORKING/master/aws/projects/002-milliseconds-converter/templates/result.html
+        wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/002-milliseconds-converter/templates/index.html
+        wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/002-milliseconds-converter/templates/result.html
         cd ..
         python3 app.py
   
@@ -86,7 +84,7 @@ Resources:
       DesiredCapacity: '2'
       HealthCheckGracePeriod: 90
       HealthCheckType: ELB
-      LaunchConfigurationName: MyAsLaunchConfig
+      LaunchConfigurationName: !Ref MyAsLaunchConfig
       MaxSize: '3' #required
       MinSize: '1' #required
       Tags:
@@ -119,8 +117,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80 
           ToPort: 80
-          CidrIp: 0.0.0.0/0
-          SourceSecurityGroupId: !GetAtt MSPLoadBalancerSecurityGroup.GroupId
+          SourceSecurityGroupId: !GetAtt MyLoadBalancerSecurityGroup.GroupId
   
   MyLoadBalancerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
