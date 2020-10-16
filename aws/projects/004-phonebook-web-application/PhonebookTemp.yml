@@ -79,12 +79,12 @@ Resources:
               pip3 install mysql-connector-python
               mkdir -p website/templates
               cd website
-              wget https://raw.githubusercontent.com/mustyfdn/fdn_aws_workshop/master/aws/projects/004-phonebook-web-application/init-phonebook-db.py
-              wget https://raw.githubusercontent.com/mustyfdn/fdn_aws_workshop/master/aws/projects/004-phonebook-web-application/phonebook-app.py
+              wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/004-phonebook-web-application/new-init-phonebook-db.py
+              wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/004-phonebook-web-application/new-phonebook-app.py
               cd templates
-              wget https://raw.githubusercontent.com/mustyfdn/fdn_aws_workshop/master/aws/projects/004-phonebook-web-application/templates/index.html
-              wget https://raw.githubusercontent.com/mustyfdn/fdn_aws_workshop/master/aws/projects/004-phonebook-web-application/templates/delete.html
-              wget https://raw.githubusercontent.com/mustyfdn/fdn_aws_workshop/master/aws/projects/004-phonebook-web-application/templates/add-update.html
+              wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/004-phonebook-web-application/templates/index.html
+              wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/004-phonebook-web-application/templates/delete.html
+              wget https://raw.githubusercontent.com/E2057SalihPoyraz/Salih-CW-aws-devops-workshop/master/aws/projects/004-phonebook-web-application/templates/add-update.html
               echo "${PhonebookRDSInstance.Endpoint.Address}" >> /home/ec2-user/dbserver.endpoint
               cd ..
               python3 ./new-init-phonebook-db.py
@@ -160,3 +160,10 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+
+Outputs:
+  WebsiteURL:
+    Value: !Sub 
+      - http://${ALBAddress}
+      - ALBAddress: !GetAtt PhonebookALB.DNSName
+    Description: Phonebook Application Load Balancer URL
