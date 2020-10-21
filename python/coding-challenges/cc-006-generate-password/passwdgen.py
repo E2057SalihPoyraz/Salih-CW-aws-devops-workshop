@@ -8,9 +8,13 @@ def passwdgen(name):
     secondchar = random.choice(name2)
     thirdchar = random.choice(name2)
 
+    #char = random.sample(name2, 3)
+
     num = random.randint(1000, 9999)
 
     password = f"{firstchar}{secondchar}{thirdchar}{num}"
+
+    #password = f"{char}{num}"
 
     return password
 
