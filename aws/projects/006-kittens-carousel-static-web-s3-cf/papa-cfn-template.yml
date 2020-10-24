@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  project6
+Parameters:
+  
+  FullDomainName:
+    Description: Please enter the full domain name of the App.
+    Type: String
+
+  HostedZoneId:
+    Description: Please select your valid hosted zone Id.
+    Type: AWS::Route53::HostedZone::Id
+
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: PublicRead
+      BucketName: !Ref FullDomainName
+      WebsiteConfiguration:
+        IndexDocument: index.html
+  
+  Policy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub '${S3Bucket.Arn}/*'
+
+  SSL:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: !Ref FullDomainName
+      DomainValidationOptions:
+        - DomainName: !Ref FullDomainName
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+  
+  CloudFront:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Aliases: 
+          - !Ref FullDomainName
+        DefaultCacheBehavior: 
+          AllowedMethods: 
+            - 'GET'
+            - 'HEAD'
+          CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6'
+          TargetOriginId: GroupPapa
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        Origins: 
+          - CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+            DomainName: !GetAtt S3Bucket.DomainName
+            Id: GroupPapa
+        PriceClass: PriceClass_All
+        ViewerCertificate: 
+          AcmCertificateArn: !Ref SSL
+          MinimumProtocolVersion: TLSv1
+          SslSupportMethod: sni-only
+  
+  Root53:
+    Type: "AWS::Route53::RecordSetGroup"
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      RecordSets:
+        - AliasTarget: 
+            DNSName: !GetAtt CloudFront.DomainName
+            EvaluateTargetHealth: false
+            HostedZoneId: Z2FDTNDATAQYW2
+          Name: !Ref FullDomainName
+          Type: A
+
+Outputs:
+  
+  FullDomainName:
+    Description: The full domain name of the App.
+    Value: !Ref FullDomainName
+
+  CloudFrontEndpoint:
+    Description: Endpoint of CloudFrontDistribution.
+    Value: !GetAtt CloudFront.DomainName
+
+  S3BucketName:
+    Description: Name of S3 Bucket
+    Value: !Ref S3Bucket
