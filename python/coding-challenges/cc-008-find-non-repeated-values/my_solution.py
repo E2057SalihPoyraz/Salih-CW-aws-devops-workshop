@@ -11,4 +11,4 @@ products = ["Pride and Prejudice", "To Kill a Mockingbird", "The Great Gatsby",\
 "One Hundred Years of Solitude", "Pride and Prejudice"]
 
   
-print(my_function(products))
+my_function(products)
