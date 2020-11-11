@@ -13,6 +13,24 @@ Parameters:
     ConstraintDescription: Must one of the existing EC2 KeyPair
 
 Resources:
+  EC2FullAccessToECR:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+  EC2toECRProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Roles: #required
+        - !Ref EC2FullAccessToECR
   JenkinsServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -33,15 +51,16 @@ Resources:
   JenkinsServer:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0644c22f90412d908
+      ImageId: ami-0947d2ba12ee1ff75 
       InstanceType: t2.micro
       KeyName: !Ref KeyPairName
+      IamInstanceProfile: !Ref EC2toECRProfile
       SecurityGroupIds:
         - !GetAtt JenkinsServerSecurityGroup.GroupId
       Tags:                
         -                        
           Key: Name
-          Value: !Sub joe-blue-native-${AWS::StackName}   
+          Value: !Sub jb-native-${AWS::StackName}   
       UserData:
         Fn::Base64: |
           #! /bin/bash
@@ -54,6 +73,29 @@ Resources:
           systemctl start jenkins
           systemctl enable jenkins
           yum install git -y
+
+          cd /opt
+          wget https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          tar -zxvf $(ls | grep apache-maven-*-bin.tar.gz)
+          rm -rf $(ls | grep apache-maven-*-bin.tar.gz)
+          ln -s $(ls | grep apache-maven*) maven
+          echo 'export M2_HOME=/opt/maven' > /etc/profile.d/maven.sh
+          echo 'export PATH=${M2_HOME}/bin:${PATH}' >> /etc/profile.d/maven.sh
+          source /etc/profile.d/maven.sh
+          
+          amazon-linux-extras install docker -y
+          systemctl start docker
+          systemctl enable docker
+          usermod -aG docker ec2-user
+          usermod -aG docker jenkins
+          #chown jenkins:docker /var/run/docker.sock
+          #systemctl restart  docker
+          curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" \
+          -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
 
 Outputs:
   JenkinsDNS:
