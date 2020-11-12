@@ -1,0 +1,27 @@
+Arkadaşlar,
+Tomcat server'ların elle ya da cloudformation template ile kurulmasına göre permission'dan dolayı
+birtakım davranış farkları oluşuyor. Kolay çözüm olarak;
+crontab job'ını root kullanıcısı altına tanımlamak.
+[ec2-user@ip-172-31-28-5 ~]$ crontab -l
+@reboot ( sleep 60 ; sh /opt/tomcat/bin/startup.sh )
+[ec2-user@ip-172-31-28-5 ~]$ 
+Eğer böyle görürseniz silin, bunun için
+[ec2-user@ip-172-31-28-5 ~]$ crontab -r
+[ec2-user@ip-172-31-28-5 ~]$ 
+root permisson ile çalıştırmak için;
+[ec2-user@ip-172-31-28-5 ~]$ sudo crontab -l
+@reboot ( sleep 60 ; sh /opt/tomcat/bin/startup.sh )
+[ec2-user@ip-172-31-28-5 ~]$
+şeklinde görürseniz birşey yapmanıza gerek yok. Ama eğer;
+[ec2-user@ip-172-31-28-5 ~]$  sudo crontab -l
+no crontab for root
+şeklinde görüseniz tanımlamak gerekiyor. Bunun için;
+[ec2-user@ip-172-31-28-5 ~]$ sudo crontab -e
+açılan pencerede
+@reboot ( sleep 60 ; sh /opt/tomcat/bin/startup.sh )
+yazıp save edin ve çıkın. Sonra kontrol edin.
+[ec2-user@ip-172-31-28-5 ~]$ sudo crontab -l
+@reboot ( sleep 60 ; sh /opt/tomcat/bin/startup.sh )
+[ec2-user@ip-172-31-28-5 ~]$ 
+[ec2-user@ip-172-31-28-5 ~]$  crontab -l
+no crontab for ec2-user
