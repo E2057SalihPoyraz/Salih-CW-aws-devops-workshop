@@ -175,7 +175,7 @@ $ ansible-playbook ping-playbook.yml
 - install "boto3"
 
 ```bash
-$ sudo pip3 install --user boto3
+$ sudo pip3 install --user boto3 #sudo ile çalışmadı, başındaki sudo yu kaldırınca çaluştı (bir sonraki komut)
 ```
 
 - Create another file named ```inventory_aws_ec2.yml``` in the project directory.
