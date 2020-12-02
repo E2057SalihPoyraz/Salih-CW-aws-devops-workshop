@@ -47,6 +47,8 @@ List of hands-on trainings within DevOps as follows;
 
 # Kubernetes
 
+- [Kubernetes Introduction](./kubernetes/kubernetes-00-introduction)
+  
 - [Hands-on Kubernetes-01 : Installing Kubernetes on Ubuntu 20.04 running on AWS EC2 Instances](./kubernetes/kubernetes-01-installing-on-ec2-linux2)
 
 - [Hands-on Kubernetes-02 : Kubernetes Basic Operations](./kubernetes/kubernetes-02-basic-operations)
@@ -58,3 +60,5 @@ List of hands-on trainings within DevOps as follows;
 - [Hands-on Kubernetes-05 : Managing Secrets and ConfigMaps](./kubernetes/kubernetes-05-managing-secrets-and-configmaps)
 
 - [Hands-on Kubernetes-06 : Kubernetes Volumes](./kubernetes/kubernetes-06-pods-volumes)
+
+- [Hands-on EKS-01 : Creating and Managing Kubernetes Cluster with AWS EKS](./kubernetes/eks-01-managing-kubernete-cluster-with-eks)
