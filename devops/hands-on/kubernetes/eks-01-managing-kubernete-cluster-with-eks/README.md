@@ -29,6 +29,45 @@ At the end of the this hands-on training, students will be able to;
 
 2. kubectl installed
 
+if not;
+
+- AWS CLI installation
+  
+```text
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+- `kubectl` installation
+  
+```text
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin && mv ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+echo 'export PATH=$PATH:$HOME/bin' >> ~/.bash_profile
+kubectl version --short --client
+```
+
+- aws configuration
+
+```text
+$ aws configure
+  AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+  AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  Default region name [None]: us-east-1
+  Default output format [None]: json
+```
+
+- Verify that you can see your cluster listed, when authenticated
+
+```text
+$ aws eks list-clusters
+{
+  "clusters": [
+    "my-cluster"
+  ]
+}
+```
 
 ## Part 1 - Creating the Kubernetes Cluster on EKS
 
@@ -130,6 +169,11 @@ kubectl get node
 1. Get to the cluster page that is recently created.
 
 2. Wait until seeing the ```ACTIVE``` status for the cluster.
+
+```bash
+$ aws eks describe-cluster --name <cluster-name> --query cluster.status
+  "ACTIVE"
+```
 
 3. On the cluster page, click on ```Compute``` tab and ```Add Node Group``` button.
 
@@ -274,16 +318,6 @@ spec:
       labels:
         app: my-app
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: beta.kubernetes.io/arch
-                operator: In
-                values:
-                - amd64
-                - arm64
       containers:
       - name: nginx
         image: nginx:1.19.2
