@@ -208,7 +208,7 @@ Terraform will perform the following actions:
 
   # aws_instance.sample-resource will be created
   + resource "aws_instance" "tf-example-ec2" {
-      + ami                          = "ami-09d95fab7fff3776c"
+      + ami                          = "ami-04d29b6f966df1537"
       + arn                          = (known after apply)
       + associate_public_ip_address  = (known after apply)
       + availability_zone            = (known after apply)
@@ -367,7 +367,7 @@ Terraform has a built in command called `terraform state` for advanced state man
 
 ```bash
 $ terraform state list
-aws_instance.tf-examle-ec2
+aws_instance.tf-example-ec2
 ```
 
 ### Creating a AWS S3 bucket
@@ -380,7 +380,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "tf-example-ec2" {
-    ami           = "ami-09d95fab7fff3776c"
+    ami           = "ami-04d29b6f966df1537"
     instance_type = "t2.micro" 
     key_name      = "northvirginia"    #<pem file>
     tags = {
@@ -407,7 +407,7 @@ Error: Error creating S3 bucket: AccessDenied: Access Denied
         status code: 403, request id: 8C5E290CD1CD3F71, host id: NT6nPSh0nW9rripGZrOAo48qJpZ2yToKCiGxDl6gfKIXY97uVH67lcvBiQjX9bsJRX3cL1oNVNM=
 ```
 
-- Becoues of we didn't use our aws credentials in ec2 instance in the `tf-example.tf` file , we take an error. So, now create a new role which allow to access ec2 and s3. Then name the role `terraform-ec2-s3-role`. And look at the AWS console, and show ec2 was created , but s3 bucket was not created. Then attach the new role to the ec2 and run the command `terraform apply -auto-approve`.
+- Becouse of we didn't use our aws credentials in ec2 instance in the `tf-example.tf` file , we take an error. So, now create a new role which allow to access ec2 and s3. Then name the role `terraform-ec2-s3-role`. And look at the AWS console, and show ec2 was created , but s3 bucket was not created. Then attach the new role to the ec2 and run the command `terraform apply -auto-approve`.
 
 ```bash
 terraform apply -auto-approve
@@ -537,11 +537,15 @@ aws_instance.tf-example-ec2
 
 - Run the command `terraform apply -auto-approve` and create S3 bucket again.
 
+```bash
+terraform apply -auto-approve
+```
+
 -  Go to the `tf-example.tf` file and make the changes.
 
 ```bash
 resource "aws_instance" "tf-example-ec2" {
-    - ami           = "ami-09d95fab7fff3776c"
+    - ami           = "ami-04d29b6f966df1537"
     + ami           = "ami-0885b1f6bd170450c"
     instance_type = "t2.micro" 
     key_name      = "northvirginia"    #<pem file>
@@ -617,7 +621,7 @@ terraform plan -destroy -out=DestroyAllResources.tfplan
 - Go to the EC2 and see the file `DestroyAllResources.tfplan` was created. Now, run the file with `terraform apply` command
 
 ```bash
-terraform apply "DestroyAllResuources.tfplan"
+terraform apply "DestroyAllResources.tfplan"
 ```
 
 ### Variables
@@ -626,7 +630,6 @@ terraform apply "DestroyAllResuources.tfplan"
 
 ```bash
 provider "aws" {
-  profile = "default"
   region  = "us-east-1"
 }
 
@@ -641,7 +644,7 @@ variable "ec2-type" {
 }
 
 variable "ec2-ami" {
-  default = "ami-0885b1f6bd170450c"
+  default = "ami-04d29b6f966df1537"
   description = "ami for new ec2"
 }
 
@@ -650,7 +653,7 @@ resource "aws_instance" "tf-example-ec2" {
   instance_type = var.ec2-type
   key_name      = "northvirginia"
   tags = {
-    Name = var.ec2-name
+    Name = "${var.ec2-name}-💻🎯🎉"
   }
 }
 
@@ -673,7 +676,7 @@ output "tf-example-private-ip" {
 }
 
 output "tf-example-versioning" {
-  value = aws_s3_bucket.tf-example-s3
+  value = aws_s3_bucket.tf-example-s3.versioning
 }
 
 ```
@@ -725,7 +728,7 @@ variable "s3-bucket-name" {
 - Run the command belov.
 
 ```bash
-terraform plan -var="s3-bucket-name=oliver-new-s3-bucket"
+terraform plan -var="s3-bucket-name=oliver-new-s3-bucket-2"
 ```
 
 - You can define variables with `-var` command
@@ -860,13 +863,16 @@ terraform plan
 
 - Create a new folder name `terraform-remote-state` and move `terraform-aws-example` into it. Then create another folder name `s3-backend` in this folder, too. 
 
-- terraform-remote-state
+```txt
+  terraform-remote-state
     ├── s3-backend
     │   └── backend.tf
     └── terraform-aws-example
         ├── oliver.tfvars
         ├── tf-example.tf
         └── variables.tf
+
+```
 
 - Go to the `s3-backend` folder and create a file name `backend.tf`. Add the followings.
 
@@ -943,6 +949,7 @@ terraform destroy
 
 -Create folders name `terraform-modules`, `modules`, `dev`, `prod`,`vpc`, `main-vpc` and files as belov. 
 
+```txt
  terraform-modules
    ├── dev
    │   └── vpc
@@ -955,6 +962,7 @@ terraform destroy
    └── prod
        └── vpc
            └── prod-vpc.tf
+```
 
 - Go to the `modules/main-vpc/main.tf` file, add the followings.
 
