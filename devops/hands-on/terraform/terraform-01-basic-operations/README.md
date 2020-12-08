@@ -497,8 +497,8 @@ output "tf-example-public-ip" {
   value = aws_instance.tf-example-ec2.public_ip
 }
 
-output "tf-example-versioning" {
-  value = aws_s3_bucket.tf-example-s3.versioning
+output "tf-example-s3-meta" {
+  value = aws_s3_bucket.tf-example-s3
 }
 ```
 
@@ -599,17 +599,6 @@ Do you want to perform these actions?
 
 Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
 
-Outputs:
-
-tf-example-private-ip = 172.31.22.95
-tf-example-public_ip = 54.145.54.140
-tf-example-versioning = [
-  {
-    "enabled" = false
-    "mfa_delete" = false
-  },
-]
-[ec2-user@
 ```
 
 - We can create a plan file in terraform with the `-out` command. You can use this file instead of `terraform.tfstate` file.
@@ -623,7 +612,6 @@ terraform plan -destroy -out=DestroyAllResources.tfplan
 ```bash
 terraform apply "DestroyAllResources.tfplan"
 ```
-
 ### Variables
 
 - Make the changes in the `tf-example.tf` file.
@@ -675,8 +663,8 @@ output "tf-example-private-ip" {
   value = aws_instance.tf-example-ec2.private_ip
 }
 
-output "tf-example-versioning" {
-  value = aws_s3_bucket.tf-example-s3.versioning
+output "tf-example-s3-meta" {
+  value = aws_s3_bucket.tf-example-s3
 }
 
 ```
@@ -716,7 +704,7 @@ resource "aws_instance" "tf-example-ec2" {
 terraform apply
 ```
 
-- Go to the `variables.tf` file and uncomment the line.
+- Go to the `variables.tf` file and comment the line.
 
 ```tf
 variable "s3-bucket-name" {
@@ -745,6 +733,14 @@ s3-bucket-name = "oliver-s3-bucket-newest"
 terraform plan --var-file="oliver.tfvars"
 ```
 
+- Go to the `variables.tf` file and uncomment the line.
+
+```tf
+variable "s3-bucket-name" {
+  default     = "oliver-new-s3-bucket"
+  description = "name for new s3 bucket"
+}
+```
 ### Conditionals and Loops
 
 - Go to the `variables.tf` file and add a new variable.
@@ -755,7 +751,7 @@ variable "num_of_buckets" {
 }
 ```
 
-- Go to the `tf-example.tf` file make the changes in order. Then run the file.
+- Go to the `tf-example.tf` file, make the changes in order. Then run the file.
 
 ```bash
 resource "aws_s3_bucket" "tf-example-s3" {
@@ -769,6 +765,8 @@ resource "aws_s3_bucket" "tf-example-s3" {
 ```bash
 terraform plan
 ```
+
+- Go to the `tf-example.tf` file, make the changes in order. Then run the file.
 
 ```bash
 resource "aws_s3_bucket" "tf-example-s3" {
@@ -824,9 +822,9 @@ terraform apply
 
 - `Data sources` allow data to be fetched or computed for use elsewhere in Terraform configuration.
 
-- Go to the `AWS console and create an image` from your ec2.
+- Go to the `AWS console and create an image` from your ec2. Name `terrafrom-lesson-ami`.
 
-- Go to the `variables.tf` file and uncomment the variable `ec2-ami`.
+- Go to the `variables.tf` file and comment the variable `ec2-ami`.
 
 - Go to the `tf-example.tf` file make the changes in order. Then run the file.
 
@@ -945,6 +943,8 @@ terraform apply
 terraform destroy
 ```
 
+- Go to the AWS console and delete `tf-remote-s3-bucket-oliver` and `tf-s3-app-lock` DynamoDb table.
+
 ### Terraform modules
 
 -Create folders name `terraform-modules`, `modules`, `dev`, `prod`,`vpc`, `main-vpc` and files as belov. 
@@ -1040,14 +1040,11 @@ output "private_subnet_cidr" {
 - Go to the `dev/vpc/dev-vpc.tf` file, add the followings.
 
 ```bash
-provider "aws" {
-  region = "us-east-1"
-}
-
 module "tf-vpc" {
   source = "../../modules/main-vpc"
   environment = "DEV"
   }
+
 output "test" {
   value = module.tf-vpc.vpc_cidr
 }
@@ -1056,10 +1053,6 @@ output "test" {
 - Go to the `prod/vpc/prod-vpc.tf` file, add the followings.
 
 ```bash
-provider "aws" {
-  region = "us-east-1"
-}
-
 module "tf-vpc" {
   source = "../../modules/main-vpc"
   environment = "PROD"
@@ -1070,9 +1063,32 @@ output "test" {
 }
 
 ```
+
+- Go to the `dev/vpc` folder and run the command belove.
+
+```bash
+terraform init
+
+terraform apply
+```
+
+- Go to the AWS console and check the VPC and subnets.
+
+- Go to the `prod/vpc` folder and run the command belove.
+
+```bash
+terraform init
+
+terraform apply
+```
+
+- Go to the AWS console and check the VPC and subnets.
+
 ### Destroy
 
 The `terraform destroy` command terminates resources defined in your Terraform configuration. This command is the reverse of terraform apply in that it terminates all the resources specified by the configuration. It does not destroy resources running elsewhere that are not described in the current configuration.
+
+- Go to the `prod/vpc` and  `dev/vpc` folders and run the command belove.
 
 ```bash
 terraform destroy
