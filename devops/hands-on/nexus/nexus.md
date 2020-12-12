@@ -64,6 +64,7 @@ sudo tar xvzf nexus-<version> from the command line.
 
 Start the repository manager: 
 
+# önce bin klasörüne git cd ile!
 ```
 ./bin/nexus run.
 ```
