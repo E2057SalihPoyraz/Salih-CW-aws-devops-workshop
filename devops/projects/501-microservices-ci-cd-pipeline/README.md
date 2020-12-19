@@ -550,5 +550,263 @@ git checkout dev
 git merge feature/msp-8
 git push origin dev
 ```
-
 ## MSP 9 - Setup Unit Tests and Configure Code Coverage Report
+
+* Create `feature/msp-9` branch from `dev`.
+
+``` bash
+git checkout dev
+git branch feature/msp-9
+git checkout feature/msp-9
+```
+
+* Create following unit tests for `Pet.java` under `customer-service` microservice using the following `PetTest` class and save it as `PetTest.java` under `./spring-petclinic-customers-service/src/test/java/org/springframework/samples/petclinic/customers/model/` folder.
+
+``` java
+package org.springframework.samples.petclinic.customers.model;
+​
+import static org.junit.jupiter.api.Assertions.assertEquals;
+​
+import org.junit.jupiter.api.Test;
+​
+public class PetTest {
+​
+    @Test
+    public void testGetName(){
+        //Arrange
+        Pet pet = new Pet();
+        //Act
+        pet.setName("Fluffy");
+        //Assert
+        assertEquals("Fluffy", pet.getName());
+    }
+​
+    @Test
+    public void testGetOwner(){
+        //Arrange
+        Pet pet = new Pet();
+        Owner owner = new Owner();
+        owner.setFirstName("Call");
+        //Act
+        pet.setOwner(owner);
+        //Assert
+        assertEquals("Call", pet.getOwner().getFirstName());
+    }
+
+    @Test
+    public void testBirthDate(){
+        //Arrange
+        Pet pet = new Pet();
+        Date bd = new Date();
+        //Act
+        pet.setBirthDate(bd);
+        //Assert
+        assertEquals(bd,pet.getBirthDate());
+    }
+}
+```
+
+* Commit the change, then push the changes to the remote repo.
+
+``` bash
+git add .
+git commit -m 'added 3 UTs for customer-service'
+git push --set-upstream origin feature/msp-9
+```
+
+* Implement unit tests with maven wrapper for only `customer-service` microservice locally on `Dev Server`.
+
+``` bash
+. ../mvnw clean test
+```
+
+* Update POM file at root folder for Code Coverage Report using `Jacoco` tool plugin.
+
+``` xml
+<plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <version>0.8.2</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>prepare-agent</goal>
+            </goals>
+        </execution>
+        <!-- attached to Maven test phase -->
+        <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+                <goal>report</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+* Commit the change, then push the changes to the remote repo.
+
+``` bash
+git add .
+git commit -m 'updated POM with Jacoco plugin'
+git push
+git checkout dev
+git merge feature/msp-9
+git push origin dev
+```
+
+* Create code coverage report for only `customer-service` microservice locally on `Dev Server`.
+
+``` bash
+. ../mvnw test
+```
+
+* Deploy code coverage report (located under relative path `target/site/jacoco` of the microservice) on Simple HTTP Server for only `customer-service` microservice on `Dev Server`.
+
+``` bash
+python -m SimpleHTTPServer # for python 2.7
+python3 -m http.server # for python 3+
+```
+
+## MSP 10 - Prepare and Implement Selenium Tests
+
+* Create `feature/msp-10` branch from `dev`.
+
+``` bash
+git checkout dev
+git branch feature/msp-10
+git checkout feature/msp-10
+```
+
+* Create a folder for Selenium jobs with the name of `selenium-jobs`.
+
+``` bash
+mkdir selenium-jobs
+```
+
+* Create Selenium job (`QA Automation` test) for testing `Owners >> All` page and save it as `test_owners_all_headless.py` under `selenium-jobs` folder.
+
+``` python
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from time import sleep
+
+# Set chrome options for working with headless mode (no screen)
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("headless")
+
+# Update webdriver instance of chrome-driver with adding chrome options
+driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver", options=chrome_options)
+
+# Connect to the application
+url = "http://ec2-34-236-170-96.compute-1.amazonaws.com:8080"
+driver.get(url)
+owners_link = driver.find_element_by_link_text("OWNERS")
+owners_link.click()
+all_link = driver.find_element_by_link_text("ALL")
+all_link.click()
+
+# Verify that table loaded
+sleep(1)
+verify_table = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+
+print("Table loaded")
+
+driver.quit()
+```
+
+* Create Selenium job (`QA Automation` test) for testing `Owners >> Register` page and save it as `test_owners_register_headless.py` under `selenium-jobs` folder.
+
+``` python
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import random
+
+# Set chrome options for working with headless mode (no screen)
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("headless")
+
+# Update webdriver instance of chrome-driver with adding chrome options
+driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver", options=chrome_options)
+
+# Connect to the application
+url = "http://ec2-34-236-170-96.compute-1.amazonaws.com:8080"
+driver.get(url)
+owners_link = driver.find_element_by_link_text("OWNERS")
+owners_link.click()
+all_link = driver.find_element_by_link_text("REGISTER")
+all_link.click()
+
+# Register new Owner to Petclinic App
+fn_field = driver.find_element_by_name('firstName')
+fn = 'Callahan' + str(random.randint(0, 100))
+fn_field.send_keys(fn)
+fn_field = driver.find_element_by_name('lastName')
+fn_field.send_keys('Clarusway')
+fn_field = driver.find_element_by_name('address')
+fn_field.send_keys('Ridge Corp. Street')
+fn_field = driver.find_element_by_name('city')
+fn_field.send_keys('McLean')
+fn_field = driver.find_element_by_name('telephone')
+fn_field.send_keys('+1230576803')
+fn_field.send_keys(Keys.ENTER)
+
+# Wait until Owner List table loaded
+verify_table = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+# Verify that new user is added to Owner List
+if fn in driver.page_source:
+    print(fn, 'is added and found in the Owners Table')
+    print("Test Passed")
+else:
+    print(fn, 'is not found in the Owners Table')
+    print("Test Failed")
+driver.quit()
+```
+
+* Create Selenium job (`QA Automation` test) for testing `Veterinarians` page and save it as `test_veterinarians_headless.py` under `selenium-jobs` folder.
+
+``` python
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from time import sleep
+
+# Set chrome options for working with headless mode (no screen)
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("headless")
+
+# Update webdriver instance of chrome-driver with adding chrome options
+driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver", options=chrome_options)
+
+# Connect to the application
+url = "http://ec2-34-236-170-96.compute-1.amazonaws.com:8080"
+driver.get(url)
+vet_link = driver.find_element_by_link_text("VETERINARIANS")
+vet_link.click()
+
+# Verify that table loaded
+sleep(1)
+verify_table = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+
+print("Table loaded")
+
+driver.quit()
+```
+
+* Commit the change, then push the selenium jobs to the remote repo.
+
+``` bash
+git add .
+git commit -m 'added selenium jobs written in python'
+git push --set-upstream origin feature/msp-10
+git checkout dev
+git merge feature/msp-10
+git push origin dev
+```
