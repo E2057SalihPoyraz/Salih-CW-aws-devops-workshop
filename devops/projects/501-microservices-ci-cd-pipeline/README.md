@@ -140,6 +140,10 @@ git checkout dev
 ``` bash
 ./mvnw clean test
 ```
+> Note: If you get `permission denied` error, try to give execution permission to **mvnw**.  
+
+    chmod +x mvnw
+  
 
 * Take the compiled code and package it in its distributable `JAR` format.
 
@@ -433,9 +437,7 @@ services:
     container_name: discovery-server
     mem_limit: 512M
     depends_on:
-
-      - config-server
-
+    - config-server
     entrypoint: ["./dockerize","-wait=tcp://config-server:8888","-timeout=60s","--","java", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
     ports:
      - 8761:8761
@@ -445,11 +447,10 @@ services:
     container_name: customers-service
     mem_limit: 512M
     depends_on:
-     - config-server
-     - discovery-server
+    - config-server
+    - discovery-server
     entrypoint: ["./dockerize","-wait=tcp://discovery-server:8761","-timeout=60s","--","java", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
     ports:
-
     - 8081:8081
 
   visits-service:
@@ -490,9 +491,7 @@ services:
     container_name: tracing-server
     mem_limit: 512M
     environment:
-
     - JAVA_OPTS=-XX:+UnlockExperimentalVMOptions -Djava.security.egd=file:/dev/./urandom
-
     ports:
      - 9411:9411
 
@@ -525,7 +524,6 @@ services:
     container_name: grafana-server
     mem_limit: 256M
     ports:
-
     - 3000:3000
 
   prometheus-server:
@@ -533,9 +531,7 @@ services:
     container_name: prometheus-server
     mem_limit: 256M
     ports:
-
     - 9091:9090
-
 ```
 
 * Prepare a script to test the deployment of the app locally with `docker-compose-local.yml` and save it as `test-local-deployment.sh`.
