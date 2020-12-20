@@ -961,7 +961,7 @@ git checkout feature/msp-13
 mkdir jenkins
 ```
 
-* Create a Jenkins job with name of `petclinic-ci-job` with following script to unit tests and configure a webhook to trigger the job. Jenkins `CI Job` should be triggered to run on each commit of `feature**` and `bugfix**` branches and on each `PR` merge to `dev` branch.
+* Create a Jenkins job with name of `petclinic-ci-job` with following script to unit tests and configure a webhook to trigger the job. Jenkins `CI Job` should be triggered to run on each commit of `feature**` and `bugfix**` branches and on each `PR` merge to `dev` branch. Select "GitHub hook trigger for GITScm polling" in "Build Triggers" section.
 
 * Prepare a script for Jenkins CI job (covering Unit Test only) and save it as `jenkins-petclinic-ci-job.sh` under `jenkins` folder.
 
@@ -979,8 +979,6 @@ docker run --rm -v $HOME/.m2:/root/.m2 -v `pwd`:/app -w /app maven:3.6-openjdk-1
   + Click on the `Webhooks` on the left hand menu, and then click on `Add webhook`.
 
   + Copy the Jenkins URL, paste it into `Payload URL` field, add `/github-webhook/` at the end of URL, and click on `Add webhook`.
-
-  
 
 ``` text
   http://[jenkins-server-hostname]:8080/github-webhook/
