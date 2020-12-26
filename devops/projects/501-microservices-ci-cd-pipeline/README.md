@@ -209,6 +209,7 @@ chmod +x /usr/local/bin/docker-compose
 yum install git -y
 yum install java-11-amazon-corretto -y
 git clone https://github.com/clarusway/petclinic-microservices.git
+cd petclinic-microservices
 git fetch
 git checkout dev
 ```
@@ -1570,37 +1571,32 @@ git commit -m 'added scripts for qa automation environment'
 git push --set-upstream origin feature/msp-17
 ```
 
-| OPTIONAL: Create a Jenkins job with the name of `test-msp-17-scripts` to test the scripts: 
-  * Select `Freestyle project` and click `OK`
-  * Select github project and write the url to your repository's page into `Project url` (https://github.com/[your-github-account]/petclinic-microservices)
-  * Under the `Source Code Management` select `Git` 
-  * Write the url of your repository into the `Repository URL` (https://github.com/[your-github-account]/petclinic-microservices.git)
-  * Add `*/feature/msp-17` branch to `Branches to build`
-  * Click `Add build step` under `Build` and select `Execute Shell`
-  * Write below script into the `Command`
-    ```bash
-    PATH="$PATH:/usr/local/bin"
-    APP_REPO_NAME="clarusway-repo/petclinic-app-dev" # Write your own repo name
-    AWS_REGION="us-east-1" #Update this line if you work on another region
-    ECR_REGISTRY="046402772087.dkr.ecr.us-east-1.amazonaws.com" # Replace this line with your ECR name
-    aws ecr create-repository \
-        --repository-name ${APP_REPO_NAME} \
-        --image-scanning-configuration scanOnPush=false \
-        --image-tag-mutability MUTABLE \
-        --region ${AWS_REGION}
-    . ./jenkins/package-with-maven-container.sh
-    . ./jenkins/prepare-tags-ecr-for-dev-docker-images.sh
-    . ./jenkins/build-dev-docker-images-for-ecr.sh
-    . ./jenkins/push-dev-docker-images-to-ecr.sh
-    ```
-  * Click `Save`
+  - OPTIONAL: Create a Jenkins job with the name of `test-msp-17-scripts` to test the scripts:   
+      * Select `Freestyle project` and click `OK`
+      * Select github project and write the url to your repository's page into `Project url` (https://github.com/[your-github-account]/petclinic-microservices)
+      * Under the `Source Code Management` select `Git` 
+      * Write the url of your repository into the `Repository URL` (https://github.com/[your-github-account]/petclinic-microservices.git)
+      * Add `*/feature/msp-17` branch to `Branches to build`
+      * Click `Add build step` under `Build` and select `Execute Shell`
+      * Write below script into the `Command`
+        ```bash
+        PATH="$PATH:/usr/local/bin"
+        APP_REPO_NAME="clarusway-repo/petclinic-app-dev" # Write your own repo name
+        AWS_REGION="us-east-1" #Update this line if you work on another region
+        ECR_REGISTRY="046402772087.dkr.ecr.us-east-1.amazonaws.com" # Replace this line with your ECR name
+        aws ecr create-repository \
+            --repository-name ${APP_REPO_NAME} \
+            --image-scanning-configuration scanOnPush=false \
+            --image-tag-mutability MUTABLE \
+            --region ${AWS_REGION}
+        . ./jenkins/package-with-maven-container.sh
+        . ./jenkins/prepare-tags-ecr-for-dev-docker-images.sh
+        . ./jenkins/build-dev-docker-images-for-ecr.sh
+        . ./jenkins/push-dev-docker-images-to-ecr.sh
+        ```
+      * Click `Save`
+      * Click `Build now` to manually start the job.
 
- Create a jenkins job to test the scripts:
-  * Enter the project name as `test-msp-17-scripts`
-  * Select `Freestyle Project`
-  * Select `Git` on `Source Control Management`
-  * Enter the link to your repository into `project url`
-  * Click 
 - Prepare a docker compose file for swarm deployment and save it as `docker-compose-swarm-dev.yml`.
 
 ```yaml
@@ -2708,7 +2704,7 @@ git checkout feature/msp-22
 
 * Create a folder with name of `k8s` for keeping the deployment files of Petclinic App on Kubernetes cluster.
 
-* Update the `docker-compose.yml` file with following content as to be used in conversion the k8s files and save it under `k8s` folder.
+* Create a `docker-compose.yml` under `k8s` folder with the following content as to be used in conversion the k8s files.
 
 ```yaml
 version: '3'
