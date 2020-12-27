@@ -726,6 +726,7 @@ APP_IP = os.environ['MASTER_PUBLIC_IP']
 url = "http://"+APP_IP.strip()+":8080/"
 print(url)
 driver.get(url)
+sleep(3)
 owners_link = driver.find_element_by_link_text("OWNERS")
 owners_link.click()
 sleep(2)
@@ -788,9 +789,9 @@ fn_field = driver.find_element_by_name('telephone')
 fn_field.send_keys('+1230576803')
 sleep(1)
 fn_field.send_keys(Keys.ENTER)
-sleep(1)
-# Wait 2 second to get updated Owner List
-sleep(2)
+
+# Wait 10 seconds to get updated Owner List
+sleep(10)
 # Verify that new user is added to Owner List
 if fn in driver.page_source:
     print(fn, 'is added and found in the Owners Table')
@@ -825,11 +826,12 @@ APP_IP = os.environ['MASTER_PUBLIC_IP']
 url = "http://"+APP_IP.strip()+":8080/"
 print(url)
 driver.get(url)
+sleep(3)
 vet_link = driver.find_element_by_link_text("VETERINARIANS")
 vet_link.click()
 
 # Verify that table loaded
-sleep(1)
+sleep(5)
 verify_table = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "table")))
 
 print("Table loaded")
@@ -1063,7 +1065,7 @@ git branch feature/msp-16
 git checkout feature/msp-16
 ```
 
-- Prepare a Cloudformation template for Docker Swarm Infrastructure consisting of 3 Managers, 2 Worker Instances and save it as `docker-swarm-infrastructure-cfn-template.yml` under `infrastructure` folder.
+- Prepare a Cloudformation template for Docker Swarm Infrastructure consisting of 3 Managers, 2 Worker Instances and save it as `dev-docker-swarm-infrastructure-cfn-template.yml` under `infrastructure` folder.
 
 - Grant permissions to Docker Machines within Cloudformation template to create ECR Registry, push or pull Docker images to/from ECR Repo.
 
@@ -1113,7 +1115,7 @@ PATH="$PATH:/usr/local/bin"
 APP_NAME="Petclinic"
 APP_STACK_NAME="Call-$APP_NAME-App-${BUILD_NUMBER}"
 CFN_KEYPAIR="call-ansible-test-dev.key"
-CFN_TEMPLATE="./infrastructure/docker-swarm-infrastructure-cfn-template.yml"
+CFN_TEMPLATE="./infrastructure/dev-docker-swarm-infrastructure-cfn-template.yml"
 AWS_REGION="us-east-1"
 aws cloudformation create-stack --region ${AWS_REGION} --stack-name ${APP_STACK_NAME} --capabilities CAPABILITY_IAM --template-body file://${CFN_TEMPLATE} --parameters ParameterKey=KeyPairName,ParameterValue=${CFN_KEYPAIR}
 ```
@@ -1449,7 +1451,7 @@ rm -rf ${CFN_KEYPAIR}
 PATH="$PATH:/usr/local/bin"
 APP_NAME="Petclinic"
 CFN_KEYPAIR="Call-$APP_NAME-dev-${BUILD_NUMBER}.key"
-CFN_TEMPLATE="./infrastructure/docker-swarm-infrastructure-cfn-template.yml"
+CFN_TEMPLATE="./infrastructure/dev-docker-swarm-infrastructure-cfn-template.yml"
 AWS_REGION="us-east-1"
 export ANSIBLE_PRIVATE_KEY_FILE="${WORKSPACE}/${CFN_KEYPAIR}"
 export ANSIBLE_HOST_KEY_CHECKING=False
@@ -1847,8 +1849,6 @@ git push --set-upstream origin feature/msp-17
 PATH="$PATH:/usr/local/bin"
 ansible-playbook -vvv --connection=local --inventory 127.0.0.1, --extra-vars "workspace=${WORKSPACE} master_public_ip=${GRAND_MASTER_PUBLIC_IP}" ./ansible/playbooks/pb_run_selenium_jobs.yaml
 ```
-- Create a Jenkins pipeline with name of `petclinic-nightly` with following script to run QA automation tests and configure a `cron job` to trigger the pipeline every night at midnight (`0 0 * * *`) on `dev` branch. Petclinic nightly build pipeline should be built on temporary QA automation environment.
-
 - Prepare a Jenkinsfile for `petclinic-nightly` builds and save it as `jenkinsfile-petclinic-nightly` under `jenkins` folder.
 
 ```groovy
@@ -1863,7 +1863,7 @@ pipeline {
         AWS_REGION="us-east-1"
         ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         CFN_KEYPAIR="call-${APP_NAME}-dev-${BUILD_NUMBER}.key"
-        CFN_TEMPLATE="./infrastructure/docker-swarm-infrastructure-cfn-template.yml"
+        CFN_TEMPLATE="./infrastructure/dev-docker-swarm-infrastructure-cfn-template.yml"
         ANSIBLE_PRIVATE_KEY_FILE="${WORKSPACE}/${CFN_KEYPAIR}"
         ANSIBLE_HOST_KEY_CHECKING="False"
     }
@@ -2037,6 +2037,8 @@ pipeline {
 }
 ```
 
+- Create a Jenkins pipeline with name of `petclinic-nightly` with following script to run QA automation tests and configure a `cron job` to trigger the pipeline every night at midnight (`0 0 * * *`) on `dev` branch. Petclinic nightly build pipeline should be built on temporary QA automation environment.
+
 - Commit the change, then push the script to the remote repo.
 
 ```bash
@@ -2049,7 +2051,6 @@ git push origin dev
 ```
 
 ## MSP 18 - Create a QA Environment on Docker Swarm with Cloudformation and Ansible
-
 
 - Create `feature/msp-18` branch from `dev`.
 
@@ -2077,7 +2078,7 @@ mv ${CFN_KEYPAIR} ${JENKINS_HOME}/.ssh/${CFN_KEYPAIR}
 ls -al ${JENKINS_HOME}/.ssh
 ```
 
-- Prepare a script for a Permanent QA Infrastructure with AWS Cloudformation using AWS CLI.
+- Prepare a script with the name of `create-qa-infrastructure-cfn.sh` for a Permanent QA Infrastructure with AWS Cloudformation using AWS CLI under `infrastructure` folder.
 
 ```bash
 PATH="$PATH:/usr/local/bin"
@@ -2116,7 +2117,7 @@ compose:
   ansible_user: "'ec2-user'"
 ```
 
-- Prepare script to create a `QA` Environment for Release on Docker Swarm using the same playbooks created for `Dev` environment.
+- Prepare script with the name of `qa_build_deploy_environment.sh` to create a `QA` Environment for Release on Docker Swarm using the same playbooks created for `Dev` environment under `ansible/scripts` folder.
 
 ```bash
 PATH="$PATH:/usr/local/bin"
@@ -2209,9 +2210,6 @@ pipeline {
     }
 }
 ```
-
-- Create a pipeline on Jenkins Server with name of `create-qa-environment-on-docker-swarm` and create QA environment manually on `dev` branch.
-
 - Commit the change, then push the scripts to the remote repo.
 
 ```bash
@@ -2222,6 +2220,7 @@ git checkout dev
 git merge feature/msp-18
 git push origin dev
 ```
+- Create a pipeline on Jenkins Server with name of `create-qa-environment-on-docker-swarm` and create QA environment manually on `dev` branch.
 
 ## MSP 19 - Prepare Build Scripts for QA Environment
 
@@ -2729,7 +2728,7 @@ services:
     - 8081:8081
     labels:
       kompose.image-pull-secret: "regcred"
-      kompose.service.expose: "petclinic.clarusway.us"
+      kompose.service.expose: "petclinic04.clarusway.us"
   visits-service:
     image: IMAGE_TAG_VISITS_SERVICE
     deploy:
@@ -2738,7 +2737,7 @@ services:
      - 8082:8082
     labels:
       kompose.image-pull-secret: "regcred"
-      kompose.service.expose: "petclinic.clarusway.us"
+      kompose.service.expose: "petclinic04.clarusway.us"
   vets-service:
     image: IMAGE_TAG_VETS_SERVICE
     deploy:
@@ -2747,7 +2746,7 @@ services:
      - 8083:8083
     labels:
       kompose.image-pull-secret: "regcred"
-      kompose.service.expose: "petclinic.clarusway.us"
+      kompose.service.expose: "petclinic04.clarusway.us"
   api-gateway:
     image: IMAGE_TAG_API_GATEWAY
     deploy:
@@ -2756,7 +2755,7 @@ services:
      - 8080:8080
     labels:
       kompose.image-pull-secret: "regcred"
-      kompose.service.expose: "petclinic.clarusway.us"
+      kompose.service.expose: "petclinic04.clarusway.us"
   tracing-server:
     image: openzipkin/zipkin
     environment:
