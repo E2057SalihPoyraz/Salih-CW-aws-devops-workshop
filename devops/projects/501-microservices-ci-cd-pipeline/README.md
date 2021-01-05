@@ -3192,9 +3192,9 @@ git checkout feature/msp-23
 
   * Inbound rules;
 
-    * Allow TCP on port 80 from Application Load Balancer.
+    * Allow HTTP protocol (TCP on port 80) from Application Load Balancer.
 
-    * Allow TCP on port 443 from any source that needs to use Rancher UI or API.
+    * Allow HTTPS protocol (TCP on port 443) from any source that needs to use Rancher UI or API.
 
     * Allow TCP on port 6443 from any source that needs to use Kubernetes API server(ex. Jenkins Server).
   
@@ -3204,7 +3204,7 @@ git checkout feature/msp-23
 
     * Allow SSH on port 22 to any node IP from a node created using Node Driver.
 
-    * Allow TCP on port 443 to `35.160.43.145/32`, `35.167.242.46/32`, `52.33.59.17/32` for catalogs of `git.rancher.io`.
+    * Allow HTTPS protocol (TCP on port 443) to `35.160.43.145/32`, `35.167.242.46/32`, `52.33.59.17/32` for catalogs of `git.rancher.io`.
 
     * Allow TCP on port 2376 to any node IP from a node created using Node Driver for Docker machine TLS port.
 
