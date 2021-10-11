@@ -16,11 +16,11 @@ At the end of the this hands-on training, students will be able to;
 
 - create a group
 
-- anatomy of the policy and attaching policy to identities. 
+- anatomy of the policy and attaching policy to the identities. 
 
 - make troubleshooting about credentials
 
-- create role and attach to EC2
+- create role and attach it to EC2
 
 ## Outline
 
@@ -39,7 +39,7 @@ At the end of the this hands-on training, students will be able to;
 
 - Show the Dashboard of IAM 
 
-- Show IAM users "sign-in link" and customize it as alias . Tell the student to write down the account alias.
+- Show IAM users "sign-in link" and customize the alias . Tell the student to write down the account alias.
 
 - Create IAM user with Administrator access for your daily work :
 
