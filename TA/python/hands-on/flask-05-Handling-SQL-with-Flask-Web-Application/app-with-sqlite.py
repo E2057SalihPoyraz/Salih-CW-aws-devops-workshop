@@ -1,10 +1,10 @@
-# import required libraries and define object
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+
 # - configure required environmental variables for SQLite
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./email.db' 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./email.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -15,15 +15,14 @@ CREATE TABLE users(
 username VARCHAR NOT NULL PRIMARY KEY,
 email VARCHAR);
 """
-data= """
+data = """
 INSERT INTO users
 VALUES
-    ("Stevie", "steive@amazon.com"),
-    ("Tugba", "tugba@google.com"),
-    ("Murat", "murat@bmw.com"),
-    ("Zeynep", "zeynep@mercedes.com"),
-	("Tuncay", "tuncay@porche.com"),
-    ("Selman", "selman@tesla.com");
+	("Tuba", "tuba@amazon.com" ),
+	("Ethan", "ethan@micrasoft.com"),
+	("mostafa", "mostafa@facebook.com"),
+    ("sait", "sait@tesla.com"),
+    ("busra","busra@google");
 """
 
 
@@ -35,7 +34,7 @@ db.session.commit()
 
 # - Write a function named `find_emails` which find emails using keyword from the user table in the db,
 # - and returns result as tuples `(name, email)`.
-def find_email(keyword):
+def find_emails(keyword):
     query = f"""
     SELECT * FROM users WHERE username like '%{keyword}%';
     """
@@ -53,7 +52,7 @@ def insert_email(name,email):
     """
     result = db.session.execute(query)
     response = ''
-    if name == None or email == None:
+    if len(name) == 0 or len(email) == 0:
         response = 'Username or email can not be empty!!'
     elif not any(result):
         insert = f"""
@@ -71,15 +70,14 @@ def insert_email(name,email):
 # - Write a function named `emails` which finds email addresses by keyword using `GET` and `POST` methods,
 # - using template files named `emails.html` given under `templates` folder
 # - and assign to the static route of ('/')
-@app.route('/', methods = ['POST', 'GET'])
+@app.route('/', methods=['GET', 'POST'])
 def emails():
     if request.method == 'POST':
         user_app_name = request.form['user_keyword']
-        user_emails = find_email(user_app_name)
-        return render_template('emails.html', show_result = True, keyword = user_app_name, name_emails = user_emails)
-
+        user_emails = find_emails(user_app_name)
+        return render_template('emails.html', name_emails=user_emails, keyword=user_app_name, show_result=True)
     else:
-        return render_template('emails.html', show_result = False)
+        return render_template('emails.html', show_result=False)
 
 
 # - Write a function named `add_email` which inserts new email to the database using `GET` and `POST` methods,
@@ -97,6 +95,5 @@ def add_email():
 
 
 # - Add a statement to run the Flask application which can be reached from any host on port 80.
-if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(host='0.0.0.0', port=80)
+if __name__=='__main__':
+    app.run(debug=True)

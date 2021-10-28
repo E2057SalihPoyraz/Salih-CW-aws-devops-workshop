@@ -6,7 +6,7 @@ from flaskext.mysql import MySQL
 app = Flask(__name__)
 
 # Configure mysql database
-app.config['MYSQL_DATABASE_HOST'] = 'adrian-db.curcz3qaowh5.us-east-1.rds.amazonaws.com'
+app.config['MYSQL_DATABASE_HOST'] = 'PLEASE WRITE YOUR DATABASE ENDPOINT HERE'
 app.config['MYSQL_DATABASE_USER'] = 'admin'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'Clarusway_1'
 app.config['MYSQL_DATABASE_DB'] = 'clarusway'
@@ -31,12 +31,11 @@ CREATE TABLE users (
 data = """
 INSERT INTO clarusway.users 
 VALUES 
-    ("Stevie", "steive@amazon.com"),
-    ("Tugba", "tugba@google.com"),
-    ("Murat", "murat@bmw.com"),
-    ("Zeynep", "zeynep@mercedes.com"),
-	("Tuncay", "tuncay@porche.com"),
-    ("Selman", "selman@tesla.com");
+	("Tuba", "tuba@amazon.com" ),
+	("Ethan", "ethan@micrasoft.com"),
+	("mostafa", "mostafa@facebook.com"),
+    ("sait", "sait@tesla.com"),
+    ("busra","busra@google");
 """
 cursor.execute(drop_table)
 cursor.execute(users_table)
@@ -66,7 +65,7 @@ def insert_email(name, email):
     # default text
     response = ''
     # if user input are None (null) give warning
-    if name == None or email == None:
+    if len(name) == 0 or len(email) == 0:
         response = 'Username or email can not be empty!!'
     # if there is no same user name in the db, then insert the new one
     elif not any(result):
@@ -109,4 +108,4 @@ def add_email():
 # Add a statement to run the Flask application which can be reached from any host on port 80.
 if __name__ == '__main__':
    app.run(debug=True)
-   #app.run(host='0.0.0.0', port=80)
+   # app.run(host='0.0.0.0', port=80)
